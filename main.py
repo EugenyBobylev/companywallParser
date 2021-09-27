@@ -61,6 +61,22 @@ def print_response_info():
 
 if __name__ == '__main__':
     page = load_html('data/9602.html')
-    print(len(page))
 
     bs = BeautifulSoup(page, 'html.parser')
+    pane = bs.select_one('.tab-pane.fade.show.active')
+
+    panels = pane.select('.panel')
+    print(f'count of panels = {len(panels)}')
+
+    print(30 * '*')
+    panel = panels[0]
+    a = panel.select_one('a')
+    company_name = a.text
+    company_url = a['href']
+
+    last_row = panel.select('.row')[-1]
+    company_address = last_row.select('span')[-1].text
+
+    print(f'name = "{company_name}"')
+    print(f'url = "{company_url}"')
+    print(f'adress = {company_address}')
