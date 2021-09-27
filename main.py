@@ -1,7 +1,7 @@
 from os.path import exists
 from typing import List
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import requests
 from requests import Response
 from model import CompanyInfo
@@ -41,20 +41,20 @@ def get_url(url: str) -> Response:
 
 
 # ********************* parsers *******************************************
-def parse_company_info(panel: str) -> CompanyInfo:
+def parse_company_info(panel: Tag) -> CompanyInfo:
     _a = panel.select_one('a')
     company_name = _a.text
     company_url = _a['href']
 
-    last_row = panel.select('.row')[-1]
+    last_row: Tag = panel.select('.row')[-1]
     company_address = last_row.select('span')[-1].text
     company_info = CompanyInfo(company_name=company_name, company_url=company_url, company_address=company_address)
     return company_info
 
 
 def parse_companies_info(html: str) -> List[CompanyInfo]:
-    _bs = BeautifulSoup(page, 'html.parser')
-    _pane = _bs.select_one('.tab-pane.fade.show.active')
+    _bs = BeautifulSoup(html, 'html.parser')
+    _pane: Tag = _bs.select_one('.tab-pane.fade.show.active')
     _panels = _pane.select('.panel')
 
     companies_info = []
@@ -70,17 +70,17 @@ def load_first_page():
     url = 'https://www.companywall.rs/'
     response = get_url(url)
     if response.status_code != 200:
-        print_response_info()
+        print_response_info(response)
 
     code = '9602'
     response = get_company_by_code(code)
     if response.status_code == 200:
         save_html(response.text, f'data/{code}.html')
-        print_response_info()
+        print_response_info(response)
 
 
 # ********************* aditional funcitons ********************************
-def print_response_info():
+def print_response_info(response: Response):
     print(f'status = {response.status_code}')
     print(response.headers)
     print(len(response.text))
@@ -88,8 +88,10 @@ def print_response_info():
 
 if __name__ == '__main__':
     page = load_html('data/9602.html')
-    comanies = parse_companies_info(page)
+    comanies: List[CompanyInfo] = parse_companies_info(page)
 
     print(len(comanies))
     for item in comanies:
+        detail_url = 'https://companywall.rs' + item.company_url
         print(item)
+        break
