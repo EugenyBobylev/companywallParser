@@ -1,4 +1,6 @@
 from os.path import exists
+
+from bs4 import BeautifulSoup
 import requests
 from requests import Response
 
@@ -15,7 +17,7 @@ def save_html(html: str, fn: str):
 def load_html(fn: str) -> str:
     if exists(fn):
         with open(fn, 'r') as f:
-            _html = f.readlines()
+            _html = f.read()
             return _html
 
 
@@ -60,3 +62,5 @@ def print_response_info():
 if __name__ == '__main__':
     page = load_html('data/9602.html')
     print(len(page))
+
+    bs = BeautifulSoup(page, 'html.parser')
