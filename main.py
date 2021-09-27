@@ -41,19 +41,25 @@ def get_url(url: str) -> Response:
 
 
 # ********************* parsers *******************************************
+def parse_company_info(panel: str) -> CompanyInfo:
+    _a = panel.select_one('a')
+    company_name = _a.text
+    company_url = _a['href']
+
+    last_row = panel.select('.row')[-1]
+    company_address = last_row.select('span')[-1].text
+    company_info = CompanyInfo(company_name=company_name, company_url=company_url, company_address=company_address)
+    return company_info
+
+
 def parse_companies_info(html: str) -> List[CompanyInfo]:
     _bs = BeautifulSoup(page, 'html.parser')
     _pane = _bs.select_one('.tab-pane.fade.show.active')
     _panels = _pane.select('.panel')
+
     companies_info = []
     for panel in _panels:
-        _a = panel.select_one('a')
-        company_name = _a.text
-        company_url = _a['href']
-
-        last_row = panel.select('.row')[-1]
-        company_address = last_row.select('span')[-1].text
-        company_info = CompanyInfo(company_name=company_name, company_url=company_url, company_address=company_address)
+        company_info = parse_company_info(panel)
         companies_info.append(company_info)
 
     return companies_info
