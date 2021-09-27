@@ -1,15 +1,25 @@
+from os.path import exists
 import requests
 from requests import Response
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0'}
 
 
+# *********************** Utils *********************************************
 def save_html(html: str, fn: str):
     if html:
         with open(fn, 'w', encoding='utf-8') as f:
             f.write(html)
 
 
+def load_html(fn: str) -> str:
+    if exists(fn):
+        with open(fn, 'r') as f:
+            _html = f.readlines()
+            return _html
+
+
+# ********************** request data from Internet *************************
 def get_company_by_code(code: str) -> Response:
     _url = f'https://www.companywall.rs/pretraga?cr=RSD&n=&mv=&r=&c=&FromDateAlt=&FromDate=&ToDateAlt=' \
            f'&ToDate=&at={code}&area=&subarea=&sbjact=t&type=&hr=&dsm%5B0%5D.Code=1101&dsm%5B1%5D.' \
@@ -26,13 +36,8 @@ def get_url(url: str) -> Response:
     return _response
 
 
-def print_response_info():
-    print(f'status = {response.status_code}')
-    print(response.headers)
-    print(len(response.text))
-
-
-if __name__ == '__main__':
+# ********************* scenaries ******************************************
+def load_first_page():
     url = 'https://www.companywall.rs/'
     response = get_url(url)
     if response.status_code != 200:
@@ -43,3 +48,15 @@ if __name__ == '__main__':
     if response.status_code == 200:
         save_html(response.text, f'data/{code}.html')
         print_response_info()
+
+
+# ********************* aditional funcitons ********************************
+def print_response_info():
+    print(f'status = {response.status_code}')
+    print(response.headers)
+    print(len(response.text))
+
+
+if __name__ == '__main__':
+    page = load_html('data/9602.html')
+    print(len(page))
