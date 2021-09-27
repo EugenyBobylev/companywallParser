@@ -1,8 +1,10 @@
 from os.path import exists
+from typing import List
 
 from bs4 import BeautifulSoup
 import requests
 from requests import Response
+from model import CompanyInfo
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0'}
 
@@ -38,6 +40,25 @@ def get_url(url: str) -> Response:
     return _response
 
 
+# ********************* parsers *******************************************
+def parse_companies_info(html: str) -> List[CompanyInfo]:
+    _bs = BeautifulSoup(page, 'html.parser')
+    _pane = _bs.select_one('.tab-pane.fade.show.active')
+    _panels = _pane.select('.panel')
+    companies_info = []
+    for panel in _panels:
+        _a = panel.select_one('a')
+        company_name = _a.text
+        company_url = _a['href']
+
+        last_row = panel.select('.row')[-1]
+        company_address = last_row.select('span')[-1].text
+        company_info = CompanyInfo(company_name=company_name, company_url=company_url, company_address=company_address)
+        companies_info.append(company_info)
+
+    return companies_info
+
+
 # ********************* scenaries ******************************************
 def load_first_page():
     url = 'https://www.companywall.rs/'
@@ -61,22 +82,8 @@ def print_response_info():
 
 if __name__ == '__main__':
     page = load_html('data/9602.html')
+    comanies = parse_companies_info(page)
 
-    bs = BeautifulSoup(page, 'html.parser')
-    pane = bs.select_one('.tab-pane.fade.show.active')
-
-    panels = pane.select('.panel')
-    print(f'count of panels = {len(panels)}')
-
-    print(30 * '*')
-    panel = panels[0]
-    a = panel.select_one('a')
-    company_name = a.text
-    company_url = a['href']
-
-    last_row = panel.select('.row')[-1]
-    company_address = last_row.select('span')[-1].text
-
-    print(f'name = "{company_name}"')
-    print(f'url = "{company_url}"')
-    print(f'adress = {company_address}')
+    print(len(comanies))
+    for item in comanies:
+        print(item)
